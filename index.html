@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mundial Reto - Predice el Mundial 2026</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
+    <!-- Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header con usuario y puntos -->
+        <div class="header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="user-details">
+                    <span class="user-name" id="userName">Cargando...</span>
+                    <span class="user-rank" id="userRank">Novato</span>
+                </div>
+            </div>
+            <div class="points-card">
+                <span class="points-label">🏆 MIS PUNTOS</span>
+                <span class="points-value" id="userPoints">0</span>
+                <span class="points-streak" id="userStreak">🔥 Racha: 0</span>
+            </div>
+        </div>
+
+        <!-- Navegación por pestañas -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="partidos">📋 PARTIDOS</button>
+            <button class="tab-btn" data-tab="ranking">🏅 RANKING</button>
+            <button class="tab-btn" data-tab="perfil">👤 PERFIL</button>
+        </div>
+
+        <!-- Pestaña 1: PARTIDOS -->
+        <div class="tab-content active" id="tab-partidos">
+            <div class="daily-reward" id="dailyReward">
+                🎁 Recompensa diaria disponible
+            </div>
+            <div class="partidos-container" id="partidosContainer">
+                <div class="loading">Cargando partidos...</div>
+            </div>
+            <button class="btn-invitar" id="btnInvitar">
+                👥 INVITAR AMIGOS (+2 PUNTOS)
+            </button>
+        </div>
+
+        <!-- Pestaña 2: RANKING -->
+        <div class="tab-content" id="tab-ranking">
+            <div class="ranking-filters">
+                <button class="filter-btn active" data-filter="global">🌍 GLOBAL</button>
+                <button class="filter-btn" data-filter="semanal">📅 SEMANAL</button>
+            </div>
+            <div class="ranking-list" id="rankingGlobalList">
+                <div class="loading">Cargando ranking global...</div>
+            </div>
+            <div class="ranking-list" id="rankingSemanalList" style="display:none;">
+                <div class="loading">Cargando ranking semanal...</div>
+            </div>
+        </div>
+
+        <!-- Pestaña 3: PERFIL -->
+        <div class="tab-content" id="tab-perfil">
+            <div class="stats-card">
+                <h3>📊 MIS ESTADÍSTICAS</h3>
+                <div class="stat-item">
+                    <span>🎯 Total aciertos:</span>
+                    <span id="totalAciertos">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>⭐ Aciertos exactos:</span>
+                    <span id="exactos">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>🔥 Racha actual:</span>
+                    <span id="diasStreak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>📅 Puntos esta semana:</span>
+                    <span id="weekPoints">0</span>
+                </div>
+            </div>
+            
+            <div class="achievements-card">
+                <h3>🏅 LOGROS</h3>
+                <div id="achievementsList">
+                    <div class="loading">Cargando logros...</div>
+                </div>
+            </div>
+            
+            <div class="powerups-card">
+                <h3>⚡ COMODINES</h3>
+                <div class="powerup-item" data-powerup="double">
+                    <span>🔮 Doble puntos (10 pts)</span>
+                    <span class="powerup-count" id="doubleCount">0</span>
+                    <button class="buy-powerup" id="btnDouble">COMPRAR</button>
+                </div>
+                <div class="powerup-item" data-powerup="shield">
+                    <span>🛡️ Seguro de racha (8 pts)</span>
+                    <button class="buy-powerup" id="btnShield">COMPRAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para predicciones -->
+    <div class="modal" id="prediccionModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3 id="modalPartido">Partido</h3>
+            <div class="prediccion-opciones">
+                <button class="opcion-btn" data-resultado="local">🏠 Gana Local</button>
+                <button class="opcion-btn" data-resultado="empate">🤝 Empate</button>
+                <button class="opcion-btn" data-resultado="visitante">✈️ Gana Visita</button>
+            </div>
+            <div class="goles-input" style="display:none;">
+                <h4>¿Cuántos goles?</h4>
+                <div class="goles-selector">
+                    <input type="number" id="golesLocal" placeholder="Local" min="0" max="10">
+                    <span>-</span>
+                    <input type="number" id="golesVisita" placeholder="Visita" min="0" max="10">
+                </div>
+                <button id="confirmarExacto" class="btn-confirmar">Confirmar marcador</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
