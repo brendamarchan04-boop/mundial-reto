@@ -894,3 +894,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("✅ Mundial Reto funcionando correctamente");
     console.log("📌 Para actualizar resultados desde consola: actualizarResultadoPartido(ID, golesLocal, golesVisita)");
 });
+// ============================================
+// PANEL ADMIN - Para actualizar resultados fácilmente
+// ============================================
+
+// 🔴 IMPORTANTE: CAMBIA ESTE NÚMERO POR TU ID DE TELEGRAM 🔴
+// Para obtener tu ID: busca @userinfobot en Telegram y escribe /start
+const ID_ADMIN = "1386719087";  // <-- REEMPLAZA "TU_NUMERO_AQUI" con tu ID
+
+async function mostrarPanelAdmin() {
+    if (userId !== ID_ADMIN) return;
+    
+    // Esperar a que carguen los partidos
+    setTimeout(() => {
+        const container = document.getElementById('partidosContainer');
+        if (!container) return;
+        
+        // Verificar si ya existe el panel
+        if (document.getElementById('adminPanel')) return;
+        
+        const panelDiv = document.createElement('div');
+        panelDiv.id = 'adminPanel';
+        panelDiv.style.cssText = 'margin-top:20px; padding:15px; background:#1a1a3a; border-radius:15px; border:2px solid #ffd700;';
+        panelDiv.innerHTML = `<h3 style="color:#ffd700; margin-bottom:10px;">🔧 PANEL ADMIN - Actualizar Resultados</h3><div id="adminPartidosLista"></div>`;
+        
+        container.parentNode.insertBefore(panelDiv, container.nextSibling);
+        cargarListaAdmin();
+    }, 1000);
+}
+
+function cargarListaAdmin() {
+    const container = document.getElementById('adminPartidosLista');
+    if (!container) return;
+    
+    const partidosHoy = obtenerPartidosDelDia();
+    
+    if (partidosHoy.length === 0) {
+        container.innerHTML = '<div style="color:#aaa;">No hay partidos hoy</div>';
+        return;
+    }
+    
+    container.innerHTML = partidosHoy.map(p => `
+        <div style="margin-bottom:15px; padding:10px; background:#0a0a2a; border-radius:10px;">
+            <div style="font-weight:bold; margin-bottom:8px;">${p.local} vs ${p.visita}</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="number" id="golLocal_${p.id}" placeholder="Goles Local" style="width:60px; padding:8px; border-radius:8px; border:none; text-align:center;">
+                <span>-</span>
+                <input type="number" id="golVisita_${p.id}" placeholder="Goles Visita" style="width:60px; padding:8px; border-radius:8px; border:none; text-align:center;">
+                <button onclick="finalizarPartidoAdmin(${p.id})" style="background:#2ecc71; border:none; padding:8px 16px; border-radius:8px; color:white; font-weight:bold;">✅ Finalizar</button>
+            </div>
+            <div id="estadoAdmin_${p.id}" style="margin-top:5px; font-size:12px; color:#aaa;">${p.finalizado ? `Finalizado: ${p.resultado}` : 'Pendiente'}</div>
+        </div>
+    `).join('');
+    
+    window.finalizarPartidoAdmin = async function(partidoId) {
+        const golesLocal = parseInt(document.getElementById(`golLocal_${partidoId}`).value) || 0;
+        const golesVisita = parseInt(document.getElementById(`golVisita_${partidoId}`).value) || 0;
+        
+        if (isNaN(golesLocal) || isNaN(golesVisita)) {
+            webApp.showAlert("Ingresa los goles");
+            return;
+        }
+        
+        await actualizarResultadoPartido(partidoId, golesLocal, golesVisita);
+        document.getElementById(`estadoAdmin_${partidoId}`).innerHTML = `✅ Finalizado: ${golesLocal}-${golesVisita}`;
+        webApp.showAlert(`Resultado actualizado: ${golesLocal}-${golesVisita}`);
+        
+        await loadMatches();
+        cargarListaAdmin();
+    };
+}
+
+// Llamar a mostrarPanelAdmin después de cargar los datos
+// Agrega esta línea al final de tu DOMContentLoaded o donde inicializas
